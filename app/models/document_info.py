@@ -60,9 +60,9 @@ class DocumentInfo(Base):
     )
 
     blood_group: Mapped[Optional[str]] = mapped_column(
-        String(10),
+        String(50),
         nullable=True,
-        comment="Blood group (e.g. O+, A+, B+)."
+        comment="Blood group (e.g. O+, A+, B+, or verbose extracted blood group descriptions)."
     )
 
     address: Mapped[Optional[str]] = mapped_column(
@@ -90,7 +90,7 @@ class DocumentInfo(Base):
     )
 
     issuing_authority: Mapped[Optional[str]] = mapped_column(
-        String(255),
+        String(500),
         nullable=True,
         comment="Name or location of the issuing RTO authority."
     )

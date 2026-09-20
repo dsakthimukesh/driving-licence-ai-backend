@@ -126,6 +126,39 @@ class TestGeminiLLMProvider(unittest.IsolatedAsyncioTestCase):
                 await self.provider.extract_info(ocr_text="test ocr", document_id=self.doc_id)
             self.assertIn("Invalid or malformed Gemini response JSON", str(ctx.exception))
 
+    async def test_verbose_blood_group_and_long_fields(self):
+        """Test extraction with verbose blood group descriptions and long RTO authority names without truncation."""
+        verbose_json = {
+            "licence_number": "MH12 20190001234",
+            "full_name": "ROHAN ANIL DESHMUKH",
+            "parent_name": "ANIL VASANT DESHMUKH",
+            "date_of_birth": "1990-08-12",
+            "blood_group": "O legally O positive",
+            "address": "Flat No. 302, Sai Residency, Plot No. 12, Karve Nagar, Pune - 411052, Maharashtra",
+            "issue_date": "2019-06-16",
+            "expiry_date": "2034-06-15",
+            "vehicle_authorization": "LMV, MCWG",
+            "issuing_authority": "REGIONAL TRANSPORT OFFICE, PUNE DIVISION, MAHARASHTRA STATE, INDIA",
+            "restrictions": "None",
+            "other_information": "(NT) ule 16 (2)"
+        }
+
+        mock_response = MagicMock()
+        mock_response.text = json.dumps(verbose_json)
+
+        with patch.object(self.provider, "_get_client") as mock_get_client:
+            mock_client = MagicMock()
+            mock_client.models.generate_content.return_value = mock_response
+            mock_get_client.return_value = mock_client
+
+            result: DrivingLicenceExtractionSchema = await self.provider.extract_info(
+                ocr_text="test ocr text",
+                document_id=self.doc_id
+            )
+
+            self.assertEqual(result.blood_group, "O legally O positive")
+            self.assertEqual(result.issuing_authority, "REGIONAL TRANSPORT OFFICE, PUNE DIVISION, MAHARASHTRA STATE, INDIA")
+
     async def test_empty_gemini_response(self):
         """Test handling of empty response from Gemini."""
         mock_response = MagicMock()
