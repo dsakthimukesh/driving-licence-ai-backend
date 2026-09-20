@@ -108,6 +108,10 @@ async def process_document(
             mime_type=mime_type,
             document_id=document.document_id
         )
+        logger.info(
+            f"Pipeline Step 2/8 complete: OCR text extraction finished for document '{document_id}' "
+            f"using OCR engine provider='{ocr_result.provider}' (extracted {len(ocr_result.text)} chars)."
+        )
     except Exception as e:
         logger.error(f"OCR execution failed for document '{document_id}': {e}")
         document_repository.update_document_status(
@@ -115,15 +119,22 @@ async def process_document(
         )
         raise DocumentProcessingError("OCR text extraction failed.") from e
 
-    # Step 3: LLM Structured Information Extraction
+    # Step 3: LLM Structured Information Extraction via Google Gemini
     llm_provider = get_llm_provider()
     try:
+        logger.info(
+            f"Pipeline Step 3/8: Executing structured driving licence extraction for document '{document_id}' "
+            f"using Gemini LLM model='{llm_provider.model}'..."
+        )
         extraction_schema = await llm_provider.extract_info(
             ocr_text=ocr_result.text,
             document_id=document.document_id
         )
+        logger.info(
+            f"Pipeline Step 3/8 complete: Gemini LLM extraction succeeded for document '{document_id}'."
+        )
     except Exception as e:
-        logger.error(f"LLM extraction failed for document '{document_id}': {e}")
+        logger.error(f"Gemini LLM extraction failed for document '{document_id}': {e}")
         document_repository.update_document_status(
             db=db, document=document, new_status="FAILED", last_modified_by=current_user.user_id
         )
@@ -190,15 +201,23 @@ async def process_document(
         )
         raise DocumentProcessingError("Text chunking and persistence failed.") from e
 
-    # Step 7: Generate dense vector embeddings and update vector columns
+    # Step 7: Generate dense vector embeddings and update vector columns via Google Gemini
     try:
+        embedding_provider = embedding_service.get_embedding_provider()
+        logger.info(
+            f"Pipeline Step 7/8: Generating vector embeddings for document '{document.document_id}' "
+            f"using Gemini embedding model='{embedding_provider.model}'..."
+        )
         await embedding_service.generate_and_store_embeddings(
             db=db,
             current_user=current_user,
             document_id=document.document_id
         )
+        logger.info(
+            f"Pipeline Step 7/8 complete: Gemini vector embeddings generated for document '{document.document_id}'."
+        )
     except Exception as e:
-        logger.error(f"Embedding generation failed for document '{document_id}': {e}")
+        logger.error(f"Gemini embedding generation failed for document '{document_id}': {e}")
         document_repository.update_document_status(
             db=db, document=document, new_status="FAILED", last_modified_by=current_user.user_id
         )
