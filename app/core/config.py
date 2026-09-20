@@ -84,6 +84,16 @@ class Settings(BaseSettings):
         description="Path to local Tesseract OCR executable binary."
     )
 
+    # Primary & Fallback LLM Provider Configuration
+    PRIMARY_LLM_PROVIDER: str = Field(
+        default="gemini",
+        description="Primary LLM provider name ('gemini', 'groq')."
+    )
+    FALLBACK_LLM_PROVIDER: str = Field(
+        default="groq",
+        description="Fallback LLM provider name ('groq', 'none')."
+    )
+
     # Google Gemini AI Configuration
     GEMINI_API_KEY: Optional[str] = Field(
         default=None,
@@ -101,6 +111,16 @@ class Settings(BaseSettings):
     GEMINI_EMBEDDING_MODEL: str = Field(
         default="gemini-embedding-001",
         description="Google Gemini model name producing dense vector embeddings."
+    )
+
+    # Groq LLM Fallback Configuration
+    GROQ_API_KEY: Optional[str] = Field(
+        default=None,
+        description="Groq API Key for LLM fallback structured extraction and RAG QA."
+    )
+    GROQ_GENERATION_MODEL: str = Field(
+        default="llama-3.3-70b-versatile",
+        description="Groq model name used for fallback extraction and RAG QA generation."
     )
 
     # Text Chunking Configuration

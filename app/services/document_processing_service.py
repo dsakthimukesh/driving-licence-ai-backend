@@ -119,22 +119,15 @@ async def process_document(
         )
         raise DocumentProcessingError("OCR text extraction failed.") from e
 
-    # Step 3: LLM Structured Information Extraction via Google Gemini
+    # Step 3: LLM Structured Information Extraction (Primary: Gemini, Fallback: Groq)
     llm_provider = get_llm_provider()
     try:
-        logger.info(
-            f"Pipeline Step 3/8: Executing structured driving licence extraction for document '{document_id}' "
-            f"using Gemini LLM model='{llm_provider.model}'..."
-        )
         extraction_schema = await llm_provider.extract_info(
             ocr_text=ocr_result.text,
             document_id=document.document_id
         )
-        logger.info(
-            f"Pipeline Step 3/8 complete: Gemini LLM extraction succeeded for document '{document_id}'."
-        )
     except Exception as e:
-        logger.error(f"Gemini LLM extraction failed for document '{document_id}': {e}")
+        logger.error(f"LLM extraction failed for document '{document_id}': {e}")
         document_repository.update_document_status(
             db=db, document=document, new_status="FAILED", last_modified_by=current_user.user_id
         )
