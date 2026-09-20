@@ -119,7 +119,7 @@ class Settings(BaseSettings):
         description="Groq API Key for LLM fallback structured extraction and RAG QA."
     )
     GROQ_GENERATION_MODEL: str = Field(
-        default="llama-3.3-70b-versatile",
+        default="openai/gpt-oss-120b",
         description="Groq model name used for fallback extraction and RAG QA generation."
     )
 

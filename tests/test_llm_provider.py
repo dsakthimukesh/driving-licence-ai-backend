@@ -171,7 +171,7 @@ class TestFallbackLLMProvider(unittest.IsolatedAsyncioTestCase):
         self.mock_gemini = AsyncMock(spec=GeminiLLMProvider)
         self.mock_gemini.model = "gemini-3.6-flash"
         self.mock_groq = AsyncMock(spec=GroqLLMProvider)
-        self.mock_groq.model = "llama-3.3-70b-versatile"
+        self.mock_groq.model = "openai/gpt-oss-120b"
         self.orchestrator = FallbackLLMProvider(
             primary_provider=self.mock_gemini,
             fallback_provider=self.mock_groq
